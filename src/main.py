@@ -1,22 +1,41 @@
 from pathlib import Path
-from chunking import chunking
-from ast import get_source_segment, parse
+from models import Source
+from ast import get_source_segment ,  parse
+import ast
 
-with open("chunking.py", 'r')as f:
-    data = f.read()
-try :
-    tree = parse(data)
-except:
-    pass
-for i in tree.body:
-    # print(data.find(str(get_source_segment(data, i))), get_source_segment(data, i), len(get_source_segment(data, i)))
-    try:
-        print(i._fields,"-=--=-=-=-=-",i.body, "=-==", i.name)
-        for k in i.body:
-            if "body" in k._fields:
-                # print("ddddddddddddddddd")
-                # print("name ---------- ", k.name)
-                # print(k._fields, "====" ,get_source_segment(data, k))
-                pass
-    except :
-        pass 
+class chunk :
+    def __init__(self, max_size: int):
+        self.max_size: int = max_size
+        self.id: int = 1
+        self.dic_chunks: dict = {"python":list(), "text":list()}
+
+    def save_chunks(self, start, end, file, content, mode="python"):
+        self.dic_chunks[mode].append(Source(file_path=file, first_character_index=start, last_character_index=end, content=content, chunk_id=self.id))
+        self.id +=1
+        
+    def chunking_py(self):
+        file = "chunking.py"
+        with open("chunking.py", "r")as f :
+            data = f.read()
+        if len(data) <= self.max_size :
+            self.save_chunks(0, len(data), "chunking.py", data)
+            return
+        try :
+            tree = parse(data)
+        except Exception :
+            pass
+        start = None
+        end = 0
+        for node in tree.body:
+            content = get_source_segment(data, node)
+            if len(content) + end <= self.max_size:
+                if start is not None :
+                    self.save_chunks(start, end, file , data[start:end])
+                start = data.find(content, end)
+                end = len(content)
+            else:
+                if start is not None:
+                    self.save_chunks(start, end, file , data[start:end])
+                if isinstance(node, ast.ClassDef):
+                    for i in node.body:
+                        if len(get_source_segment(i )) + end < self.max_size:

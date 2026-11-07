@@ -83,12 +83,19 @@ class chunking():
                 content = get_source_segment(code, node)
                 content_len = len(content)
                 content_start = code.find(content, end)
-                if content_len <= max_size:
-                    if start is not None:
-                        self.save_chunks()
+                if content_len + end <= max_size:
+                    if start is  None:
+                        start = content_start
+                        end = content_len 
+                    else:
+                        end = content_len
+                elif content_len + end  >= max_size:
+                    if start  is not None:
+                        self.save_chunks(start,end, file,code[start, end])
                         start = None
+                        end = 0
+                    start = content_start
                         
-
 
                                 
                                     
