@@ -1,0 +1,23 @@
+[
+    {
+        "file_path": "file",
+        "first_character_index": 0,
+        "last_character_index": 105,
+        "content": "from pathlib import Path\nfrom models import Source\nfrom ast import get_source_segment ,  parse\nimport ast",
+        "chunk_id": 1
+    },
+    {
+        "file_path": "chunking.py",
+        "first_character_index": 128,
+        "last_character_index": 684,
+        "content": "def __init__(self, max_size: int):\n        self.max_size: int = max_size\n        self.id: int = 1\n        self.dic_chunks: dict = {\"python\":list(), \"text\":list()}\n\n\n    def save_chunks(self, start, end, file, content, mode=\"python\"):\n        self.dic_chunks[mode].append(Source(file_path=file, first_character_index=start, last_character_index=end, content=content, chunk_id=self.id))\n        self.id +=1\n\n\n    def find_files(self):\n        \"\"\"\n        this function separate files of code python and other docs that should \n        i chunk and make it in ",
+        "chunk_id": 2
+    },
+    {
+        "file_path": "chunking.py",
+        "first_character_index": 2624,
+        "last_character_index": 2913,
+        "content": "import json\ntest = chunking(2000)\ndi = test.find_files()\n# print(\"sssssssssssss\")\ntest.chunk_docs(di[\"docs\"])\n\nall_chunks = [d.model_dump() for mode  in test.dic_chunks for d in test.dic_chunks[mode]]\nwith open(\"issam.json\", 'w') as f:\n    json.loads\n    json.dump(all_chunks, f, indent=4)",
+        "chunk_id": 3
+    }
+]

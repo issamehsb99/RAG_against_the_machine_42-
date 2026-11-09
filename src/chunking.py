@@ -2,8 +2,6 @@ from pathlib import Path
 from models import Source
 from ast import get_source_segment ,  parse
 import ast
-
-
 class chunking():
     def __init__(self, max_size: int):
         self.max_size: int = max_size
@@ -45,26 +43,21 @@ class chunking():
 
         """
         overlap =int( self.max_size * 0.15)
-        chunking_size = self.max_size
+        size = self.max_size
         start = 0
         for file in files:
             with open(file, 'r') as f:
                 content = f.read()
             content_len = len(content)
             start = 0
-            if content_len <= chunking_size:
+            if content_len <= size:
                 self.save_chunks(start=start, end=content_len,content=content,file= file, mode="text")
                 continue
-            
-            end = chunking_size
-            while True:
-                self.save_chunks(start=start, end=end, content=content[start:end],file= file, mode="text")
-                start = end - overlap
-                end = start +  chunking_size
-                if len(content) <= end:
-                    self.save_chunks(start=start, end=content_len, content=content[start:content_len],file= file, mode="text")
-                    break
+            step = size - overlap
+            for s in range(0, max(len(content) - overlap, 1), step):
+                self.save_chunks(s, min(s + size, len(content)), file, content[s:s+size], "text")
 
+    
     def chunk_python(self, files:list[str]):
         max_size = self.max_size
         for file in files:
@@ -81,38 +74,6 @@ class chunking():
             end = 0
             for node in tree.body:
                 content = get_source_segment(code, node)
-                content_len = len(content)
-                content_start = code.find(content, end)
-                if content_len + end <= max_size:
-                    if start is  None:
-                        start = content_start
-                        end = content_len 
-                    else:
-                        end = content_len
-                elif content_len + end  >= max_size:
-                    if start  is not None:
-                        self.save_chunks(start,end, file,code[start, end])
-                        start = None
-                        end = 0
-                    start = content_start
-                        
-
-                                
-                                    
-                                                                   
-                                
-
-                
-
-
-
-
-
-
-
-
-
-
 import json
 test = chunking(2000)
 di = test.find_files()
